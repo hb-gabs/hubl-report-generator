@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="images/logo.svg" />
+  <title>TI INFRA - HubLocal</title>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Gerador de relatórios</h1>
+
+    <div class="files">
+      <label for="myfile">Carregar arquivo (.xlsx)</label>
+      <input id="myfile"  name="myfile" type="file" accept=".xlsx, .csv, .tsv">
+
+      <div class="filtering-options">
+        <h4>Opções de filtragem</h4>
+        <label for="date">Selecione a data: </label>
+        <input id="date" name="date" type="date">
+        <label for="types">Selecione o tipo de filtragem</label>
+        <select name="types" id="types">
+          <option value="default">-</option>
+          <option value="month">Mês</option>
+          <option value="exact">Exato</option>
+          <option value="before">Antes</option>
+          <option value="after">Depois</option>
+        </select>
+        <label for="filter-type"></label>
+      </div>
+
+      <button id="gen-report">Gerar relatório</button>
+    </div>
+
+    <div class="report">
+      <h3>Chamados</h3>
+      <p>Total: 10</p>
+
+      <h3>Status</h3>
+      <ul>
+        <li>
+          <p>Fechado: 10</p>
+        </li>
+        <li>
+          <p>Concluído: 10</p>
+        </li>
+        <li>
+          <p>Aberto: 10</p>
+        </li>
+      </ul>
+
+      <h3>Categorias</h3>
+      <ul>
+        <li>
+          <p>Solicitação de registro: 10</p>
+        </li>
+        <li>
+          <p>Solicitação de compra: 10</p>
+        </li>
+        <li>
+          <p>Hubnautas: 10</p>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script src="index.js"></script>
+  
+</body>
+</html>
