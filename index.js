@@ -11,14 +11,6 @@ let reader = new FileReader();
 let dm;
 let data;
 let data_obj = {};
-let filtering_keys = {
-  'Categoria': [
-    'Hubnautas'
-  ],
-  'Urgência': [
-    'Média'
-  ]
-};
 
 class DataManager {
   constructor(df) {
@@ -156,7 +148,7 @@ class DataManager {
     if(mode === 'default') {
       return this.df;
     }
-    
+
     console.error('Tipo de filtragem não especificada.');
   }
 }
@@ -173,13 +165,13 @@ reader.onload = e => {
 }
 
 genReport.onclick = () => {
-
   while(reportContainer.firstChild) {
     reportContainer.removeChild(reportContainer.lastChild);
   }
-  
+
   let selectedDate = dateInput.value.split('-');
   let filterType = filterSelection.value;
+
   try {
     reader.readAsText(fileButton.files[0]);
   } catch (error) {
@@ -191,20 +183,14 @@ genReport.onclick = () => {
   }
 
   setTimeout(() => {
-
     dm = new DataManager(data);
-
-
     let filtered_df = dm.filter_by_date(date = selectedDate, mode = filterType);
     let n_total = filtered_df.length;
     let status_analysis = dm.analysis('Status', filtered_df);
     let category_analysis = dm.analysis('Categoria', filtered_df);
     let services_analysis = dm.analysis('Serviço (Completo)', filtered_df);
     let report = [status_analysis, category_analysis, services_analysis];
-
-
     render(report, n_total);
-
   }, 100);
 }
 
@@ -232,8 +218,8 @@ const render = (report, n_total) => {
     })
   } else {
     let h3 = document.createElement('h3');
-    h3.innerHTML = 'Não há registro na data solicitada.';
+    h3.innerHTML = 'Não há registro para a data solicitada.';
+    h3.style.color = 'red';
     reportContainer.appendChild(h3);
   }
-  
 }

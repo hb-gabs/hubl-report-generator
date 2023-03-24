@@ -9,7 +9,6 @@ body {
   width: 100%;
 }
 
-
 .top {
   background-color: #0385FD;
   width: 100%;
@@ -19,6 +18,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem 1rem;
+  box-sizing: border-box;
 }
 
 .top img {
@@ -57,9 +58,10 @@ button:hover {
   display: flex;
   flex-direction: column;
   border-right: 1px solid #d6d6d6;
-  height: 100vh;
+  height: calc(100vh - 100px);
   padding: 1rem;
   width: fit-content;
+  box-sizing: border-box;
 }
 
 .filtering-options {
@@ -83,6 +85,10 @@ button:hover {
   flex-direction: column;
   width: fit-content;
   padding: 1rem;
+  overflow-y: auto;
+  height: calc(100vh - 100px);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 
@@ -134,10 +140,6 @@ input {
   gap: 1rem;
 }
 
-#load input * {
-  background-color: #0385FD;
-}
-
 @media only screen and (max-width: 800px) {
   .container {
     flex-direction: column;
@@ -149,5 +151,15 @@ input {
     height: fit-content;
     border-right: none;
     box-sizing: border-box;
+  }
+
+  .report {
+    overflow-y: unset;
+  }
+}
+
+@media only screen and (max-width: 550px) {
+  h1 {
+    font-size: 25px;
   }
 }
