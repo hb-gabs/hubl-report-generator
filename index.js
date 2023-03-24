@@ -4,6 +4,8 @@ let filterSelection = document.querySelector('#types');
 let genReport = document.querySelector('#gen-report');
 let reportContainer = document.querySelector('.report');
 let nmaxInput = document.querySelector('#max-items');
+let colItemsDiv = document.querySelector('#columns-items');
+let checks = [];
 
 nmaxInput.value = 10;
 
@@ -184,6 +186,9 @@ genReport.onclick = () => {
 
   setTimeout(() => {
     dm = new DataManager(data);
+
+    renderCheckboxes(dm.cols_names);
+
     let filtered_df = dm.filter_by_date(date = selectedDate, mode = filterType);
     let n_total = filtered_df.length;
     let status_analysis = dm.analysis('Status', filtered_df);
@@ -222,4 +227,29 @@ const render = (report, n_total) => {
     h3.style.color = 'red';
     reportContainer.appendChild(h3);
   }
+}
+
+const renderCheckboxes = (cols_names) => {
+  cols_names.map((name, index) => {
+    let label = document.createElement('label');
+    label.innerHTML = name;
+    label.className += 'checkbox';
+    let checkBox = document.createElement('input');
+    checkBox.type = 'checkbox';
+    checkBox.onclick = () => checkBoxClick(index);
+    checkBox.checked = true;
+    let div = document.createElement('div');
+    div.appendChild(checkBox);
+    div.appendChild(label);
+    colItemsDiv.appendChild(div);
+    checks.push(true);
+    console.log(checkBox);
+  })
+  console.log(checks);
+}
+
+const checkBoxClick = (index) => {
+  checks[index] = !checks[index];
+  console.log(index);
+  console.log(checks);
 }
