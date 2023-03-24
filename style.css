@@ -1,0 +1,153 @@
+body {
+  font-family: 'Poppins';
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+}
+
+
+.top {
+  background-color: #0385FD;
+  width: 100%;
+  color: white;
+  margin: 0;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top img {
+  margin-right: 2rem;
+}
+
+h1 {
+  margin: 0;
+  text-align: center;
+}
+
+h3 {
+  margin: 0;
+}
+
+h4 {
+  margin: 0;
+}
+
+button {
+  border: none;
+  background-color: #0385FD;
+  color: white;
+  font-size: 20px;
+  border-radius: 5px;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+button:hover {
+  background-color: #00DA91;
+}
+
+.files {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #d6d6d6;
+  height: 100vh;
+  padding: 1rem;
+  width: fit-content;
+}
+
+.filtering-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.filtering-options div label {
+  margin-right: 1rem;
+}
+
+.filtering-options div {
+  display: flex;
+  flex-direction: column;
+}
+
+.report {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  padding: 1rem;
+}
+
+
+ul {
+  display: flex;
+  flex-direction: column;
+}
+
+li {
+  list-style: none;
+  padding: .3rem .3rem;
+}
+
+p {
+  margin: 0;
+}
+
+select {
+  height: 30px;
+  min-width: 100px;
+  background-color: white;
+  font-family: 'Poppins';
+  font-size: 18px;
+}
+
+select:hover, input:hover {
+  cursor: pointer;
+}
+
+option {
+  font-family: 'Poppins';
+  font-size: 18px;
+}
+
+input {
+  height: 30px;
+  min-width: 100px;
+  font-family: 'Poppins';
+  font-size: 18px;
+}
+
+#load {
+  display: flex;
+  flex-direction: column;
+  background-color: #00DA91;
+  padding: 1rem;
+  border-radius: 5px;
+  color: white;
+  gap: 1rem;
+}
+
+#load input * {
+  background-color: #0385FD;
+}
+
+@media only screen and (max-width: 800px) {
+  .container {
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .files {
+    width: 100%;
+    height: fit-content;
+    border-right: none;
+    box-sizing: border-box;
+  }
+}

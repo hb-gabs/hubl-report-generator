@@ -2,30 +2,36 @@ let fileButton = document.querySelector('#myfile');
 let dateInput = document.querySelector('#date');
 let filterSelection = document.querySelector('#types');
 let genReport = document.querySelector('#gen-report');
-let resetReport = document.querySelector('#reset-report');
+let reportContainer = document.querySelector('.report');
+let nmaxInput = document.querySelector('#max-items');
+
+nmaxInput.value = 10;
 
 let reader = new FileReader();
+let dm;
 let data;
 let data_obj = {};
-let dm;
+let filtering_keys = {
+  'Categoria': [
+    'Hubnautas'
+  ],
+  'Urgência': [
+    'Média'
+  ]
+};
 
 class DataManager {
-  constructor(
-    df
-  ) {
+  constructor(df) {
     this.odf = df;
     this.df = df;
-    this.nrow = null;
-    this.ncols = null;
-    this.cols_names = null; 
-    this.report = {
-
-    }
+    this.nrow = df.length;
+    this.ncols = df[0].length;
+    this.cols_names = df[0]; 
   }
 
-  get_column_data(column_name)  {
-    let index = this.df[0].indexOf(column_name);
-    return this.df.map(data => data[index]);
+  get_column_data(column_name, df)  {
+    let index = this.cols_names.indexOf(column_name);
+    return df.map(data => data[index]);
   }
 
   unique(value, index, array) {
@@ -39,12 +45,14 @@ class DataManager {
     return [sort_narr, sort_sarr];
   }
 
-  analysis(column_name) {
-    let column_data = this.get_column_data(column_name);
+  analysis(column_name, df=null) {
+    if(df===null) df=this.df;
+    let column_data = this.get_column_data(column_name, df);
     let unique_values =  column_data.filter(this.unique);
     let values_quantities = unique_values.map(val => column_data.filter(v => v===val).length);
     [values_quantities, unique_values] = this.sort_arrays(values_quantities, unique_values);
     return {
+      name: column_name,
       values: unique_values,
       quantities: values_quantities
     }
@@ -76,38 +84,31 @@ class DataManager {
   }
 
   getDay(string) {
-    try {
-      return Number(string.slice(0,2));
-    } catch (error) {
-      return '';      
-    }
+    return Number(string.slice(0,2));
   }
 
   getMonth(string) {
-    try {
-      return Number(string.slice(3,5));
-    } catch (error) {
-      return '';      
-    }
+    return Number(string.slice(3,5));
   }
 
   getYear(string) {
-    try {
-      return Number(string.slice(6,10));
-    } catch (error) {
-      return '';      
-    }
+    return Number(string.slice(6,10));
   }
 
   filter_by_date(date=[2022,11,11], mode='month') {
-    let idate = this.df[0].indexOf('Aberto em');
+    let idate = this.cols_names.indexOf('Aberto em');
     let [year, month, day] = date;
+
     if(mode === 'month') {
-      this.df = this.df.filter(array => month==this.getMonth(array[idate]) && year==this.getYear(array[idate]));
-    } else if(mode === 'exact') {
-      this.df = this.df.filter(array => day==this.getDay(array[idate])  && year==this.getYear(array[idate]))
-    } else if(mode === 'before') {
-      this.df = this.df.filter(array => {
+      return this.df.filter(array => month==this.getMonth(array[idate]) && year==this.getYear(array[idate]));
+    }
+
+    if(mode === 'exact') {
+      return this.df.filter(array => day==this.getDay(array[idate])  && year==this.getYear(array[idate]))
+    }
+    
+    if(mode === 'before') {
+      return this.df.filter(array => {
         if(this.getYear(array[idate])<year) {
           return true;
         }
@@ -127,8 +128,10 @@ class DataManager {
           return true;
         }
       })
-    } else if(mode === 'after') {
-      this.df = this.df.filter(array => {
+    }
+    
+    if(mode === 'after') {
+      return this.df.filter(array => {
         if(this.getYear(array[idate])<year) {
           return false;
         }
@@ -148,9 +151,13 @@ class DataManager {
           return true;
         }
       })
-    } else {
+    }
+
+    if(mode === 'default') {
       return this.df;
     }
+    
+    console.error('Tipo de filtragem não especificada.');
   }
 }
 
@@ -166,36 +173,67 @@ reader.onload = e => {
 }
 
 genReport.onclick = () => {
+
+  while(reportContainer.firstChild) {
+    reportContainer.removeChild(reportContainer.lastChild);
+  }
+  
   let selectedDate = dateInput.value.split('-');
   let filterType = filterSelection.value;
-  reader.readAsText(fileButton.files[0]);
+  try {
+    reader.readAsText(fileButton.files[0]);
+  } catch (error) {
+    let h3 = document.createElement('h3');
+    h3.innerHTML = 'Erro ao carregar o arquivo!';
+    h3.style.color = 'red';
+    reportContainer.appendChild(h3);
+    return;    
+  }
 
   setTimeout(() => {
 
     dm = new DataManager(data);
 
-    console.log('selectedDate =>', selectedDate);
-    console.log('filterType =>', filterType);
-    dm.filter_by_date(date=selectedDate, mode=filterType)
 
-    // console.log('dm.analise_de_categorias =>', dm.analise_de_categorias());
-    // console.log('dm.analise_de_servicos() =>', dm.analise_de_servicos());
-    // console.log('dm.analise_de_status() =>', dm.analise_de_status());
-    // console.log('data =>', data);
-    // console.log('filtering =>', dm.filter_by_columns({
-    //   'Categoria': [
-    //     'Solicitação de registro ',
-    //   ],
-    //   'Urgência': [
-    //     'Média'
-    //   ]
-    // }));
+    let filtered_df = dm.filter_by_date(date = selectedDate, mode = filterType);
+    let n_total = filtered_df.length;
+    let status_analysis = dm.analysis('Status', filtered_df);
+    let category_analysis = dm.analysis('Categoria', filtered_df);
+    let services_analysis = dm.analysis('Serviço (Completo)', filtered_df);
+    let report = [status_analysis, category_analysis, services_analysis];
 
-    console.log('dm.df =>', dm.df);
+
+    render(report, n_total);
 
   }, 100);
 }
 
-resetReport.onclick = () => {
-  dm.reset_df();
+const render = (report, n_total) => {
+  if(report[0].values.length>0) {
+    let h3 = document.createElement('h3');
+    h3.innerHTML = `TOTAL: ${n_total}`;
+    reportContainer.appendChild(h3);
+
+    report.map(info => {
+      let h3 = document.createElement('h3');
+      h3.innerHTML = info.name;
+      let ul = document.createElement('ul');
+      let L = info.values.length;
+      let max = Number(nmaxInput.value) > L ? L : Number(nmaxInput.value); 
+      for(let i=0; i<max; i++) {
+        let li = document.createElement('li');
+        let p = document.createElement('p');
+        p.innerHTML = `${info.values[i]}: ${info.quantities[i]}`;
+        li.appendChild(p);
+        ul.appendChild(li);
+      }
+      reportContainer.appendChild(h3);
+      reportContainer.appendChild(ul);
+    })
+  } else {
+    let h3 = document.createElement('h3');
+    h3.innerHTML = 'Não há registro na data solicitada.';
+    reportContainer.appendChild(h3);
+  }
+  
 }
