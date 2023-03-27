@@ -6,13 +6,14 @@ let reportContainer = document.querySelector('.report');
 let nmaxInput = document.querySelector('#max-items');
 let colItemsDiv = document.querySelector('#columns-items');
 let checks = [];
-
-nmaxInput.value = 10;
+let checkBoxesContainers = [];
+let n_renders = 0;
 
 let reader = new FileReader();
 let dm;
 let data;
-let data_obj = {};
+
+nmaxInput.value = 10;
 
 class DataManager {
   constructor(df) {
@@ -159,17 +160,13 @@ reader.onload = e => {
   let data_tsv = e.target.result;
   let data_rows = data_tsv.split('\n');
   data = data_rows.map(dt => dt.split('\t'));
-  let columns_names = data[0];
-  for(let i=0; i<columns_names.length; i++) {
-    data_obj = {...data_obj, [columns_names[i]]: data.map((array) => array[i].replace('\r','')).slice(1)}; 
-  }
   data = data.map(val => val.map((v, i) => i===val.length-1 ? v.replace('\r','') : v));
 }
 
 genReport.onclick = () => {
-  while(reportContainer.firstChild) {
-    reportContainer.removeChild(reportContainer.lastChild);
-  }
+  clearContent();
+
+  n_renders+=1;
 
   let selectedDate = dateInput.value.split('-');
   let filterType = filterSelection.value;
@@ -177,10 +174,13 @@ genReport.onclick = () => {
   try {
     reader.readAsText(fileButton.files[0]);
   } catch (error) {
-    let h3 = document.createElement('h3');
-    h3.innerHTML = 'Erro ao carregar o arquivo!';
-    h3.style.color = 'red';
-    reportContainer.appendChild(h3);
+    let h3 = create('h3', {
+      innerHTML: 'Erro ao carregar o arquivo!',
+      style: {
+        color: 'red'
+      }
+    });
+    insert(reportContainer, h3);
     return;    
   }
 
@@ -191,65 +191,111 @@ genReport.onclick = () => {
 
     let filtered_df = dm.filter_by_date(date = selectedDate, mode = filterType);
     let n_total = filtered_df.length;
-    let status_analysis = dm.analysis('Status', filtered_df);
-    let category_analysis = dm.analysis('Categoria', filtered_df);
-    let services_analysis = dm.analysis('Serviço (Completo)', filtered_df);
-    let report = [status_analysis, category_analysis, services_analysis];
+
+    let report = genReportByColumns(dm, filtered_df);
+
     render(report, n_total);
   }, 100);
 }
 
+const genReportByColumns = (dm, filtered_df) => {
+  let report = [];
+  dm.cols_names.map((name, index) => checks[index] && report.push(dm.analysis(name, filtered_df)));
+  return report;
+}
+
 const render = (report, n_total) => {
   if(report[0].values.length>0) {
-    let h3 = document.createElement('h3');
-    h3.innerHTML = `TOTAL: ${n_total}`;
-    reportContainer.appendChild(h3);
+    let h3 = create('h3', {
+      innerHTML: `TOTAL: ${n_total}`
+    });
+    insert(reportContainer, h3);
 
     report.map(info => {
-      let h3 = document.createElement('h3');
-      h3.innerHTML = info.name;
-      let ul = document.createElement('ul');
+      let h3 = create('h3', {
+        innerHTML: info.name
+      });
+      let ul = create('ul');
       let L = info.values.length;
       let max = Number(nmaxInput.value) > L ? L : Number(nmaxInput.value); 
       for(let i=0; i<max; i++) {
-        let li = document.createElement('li');
-        let p = document.createElement('p');
-        p.innerHTML = `${info.values[i]}: ${info.quantities[i]}`;
-        li.appendChild(p);
-        ul.appendChild(li);
+        let li = create('li');
+        let p = create('p', {
+          innerHTML: `${info.values[i]}: ${info.quantities[i]}`
+        });
+        insert(li, p);
+        insert(ul, li);
       }
-      reportContainer.appendChild(h3);
-      reportContainer.appendChild(ul);
+      insert(reportContainer, h3);
+      insert(reportContainer, ul);
     })
   } else {
-    let h3 = document.createElement('h3');
-    h3.innerHTML = 'Não há registro para a data solicitada.';
-    h3.style.color = 'red';
-    reportContainer.appendChild(h3);
+    let h3 = create('h3', {
+      innerHTML: 'Não há registro para a data solicitada.',
+      style: {
+        color: 'red'
+      }
+    })
+    insert(reportContainer, h3);
   }
 }
 
 const renderCheckboxes = (cols_names) => {
-  cols_names.map((name, index) => {
-    let label = document.createElement('label');
-    label.innerHTML = name;
-    label.className += 'checkbox';
-    let checkBox = document.createElement('input');
-    checkBox.type = 'checkbox';
-    checkBox.onclick = () => checkBoxClick(index);
-    checkBox.checked = true;
-    let div = document.createElement('div');
-    div.appendChild(checkBox);
-    div.appendChild(label);
-    colItemsDiv.appendChild(div);
-    checks.push(true);
-    console.log(checkBox);
-  })
-  console.log(checks);
+  if(n_renders === 1) {
+    cols_names.map((name, index) => {
+      let label = create('label', {
+        innerHTML: name
+      });
+      label.className += 'checkbox';
+  
+      let checkBox = create('input', {
+        type: 'checkbox',
+        onclick: () => checkBoxClick(index),
+        checked: true
+      });
+  
+      let div = create('div');
+      insert(div, [checkBox, label]);
+      insert(colItemsDiv, [div]);
+      checks.push(true);
+      checkBoxesContainers.push(div);
+    })
+  }
 }
 
 const checkBoxClick = (index) => {
   checks[index] = !checks[index];
-  console.log(index);
-  console.log(checks);
+}
+
+const insert = (parent, elements) => {
+  if(typeof(elements.length) !== 'undefined') {
+    elements.map(element => parent.appendChild(element));
+  } else {
+    parent.appendChild(elements);
+  }
+}
+
+const create = (elementName, parameters = null) => {
+  let element = document.createElement(elementName);
+  if(parameters) {
+    insertParameters(element, parameters);
+    if(parameters.style) {
+      insertStyle(element, parameters.style);
+    }
+  }
+  return element;
+}
+
+const insertParameters = (element, parameters) => {
+  Object.keys(parameters).map(key => element[key] = parameters[key]);
+}
+
+const insertStyle = (element, parameters) => {
+  Object.keys(parameters).map(key => element['style'][key] = parameters[key]);
+}
+
+const clearContent = () => {
+  while(reportContainer.firstChild) {
+    reportContainer.removeChild(reportContainer.lastChild);
+  }
 }
