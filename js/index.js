@@ -55,7 +55,9 @@ genReport.onclick = () => {
 
     let report = genReportByColumns(dm, filtered_df);
 
-    render(report, n_total);
+    let workedHours = dm.genWorkedHoursMean()
+
+    render(report, n_total, workedHours);
   }, 100);
 }
 
@@ -65,12 +67,17 @@ const genReportByColumns = (dm, filtered_df) => {
   return report;
 }
 
-const render = (report, n_total) => {
+const render = (report, n_total, hours) => {
   if(report[0].values.length>0) {
     let h3 = create('h3', {
       innerHTML: `TOTAL: ${n_total}`
     });
     insert(reportContainer, h3);
+
+    let h4 = create('h4', {
+      innerHTML: `Média de tempo de conclusão: ${hours.toFixed(1)} horas`
+    })
+    insert(reportContainer, h4);
 
     report.map(info => {
       let h3 = create('h3', {

@@ -1,4 +1,4 @@
-import { sorting } from "./utils.js";
+import { sorting, calculateHours } from "./utils.js";
 
 
 export class DataManager {
@@ -7,7 +7,11 @@ export class DataManager {
       this.df = df;
       this.nrow = df.length;
       this.ncols = df[0].length;
-      this.cols_names = df[0]; 
+      this.cols_names = df[0];
+      this.startDateName = 'Aberto em';
+      this.endDateName = 'Resolvido em'
+      this.startDateArray = [];
+      this.endDateArray = [];
     }
   
     get_column_data(column_name, df)  {
@@ -35,11 +39,49 @@ export class DataManager {
       let values_quantities = unique_values.map(val => column_data.filter(v => v===val).length);
       const [qtt_sorted, qtt_sorted_indexes] = sorting(values_quantities);
       const unique_values_sorted = qtt_sorted_indexes.map(ind => unique_values[ind]);
+      if (column_name === this.startDateName) this.startDateArray = column_data;
+      if (column_name === this.endDateName) this.endDateArray = column_data;
       return {
         name: column_name,
         values: unique_values_sorted,
         quantities: qtt_sorted
       }
+    }
+
+    formatDate() {
+      let newStartDateArray = [];
+      let newEndDateArray = [];
+      
+      for (let i=0; i<this.startDateArray.length; i++) {
+        newStartDateArray.push(this.startDateArray[i].split(' ')[0].split('/').map(val => Number(val)));
+        newEndDateArray.push(this.endDateArray[i].split(' ')[0].split('/').map(val => Number(val)));
+      }
+      this.startDateArray = newStartDateArray;
+      this.endDateArray = newEndDateArray;
+    }
+
+    genWorkedHoursMean(workingHours = true) {
+      this.formatDate();
+      let workedHours = 0;
+      let invalids = 0;
+      for (let i=0; i<this.startDateArray.length; i++) {
+        let result = calculateHours(
+          this.startDateArray[i],
+          this.endDateArray[i],
+          workingHours
+        );
+        if(isNaN(result)) result = 0;
+        workedHours += result;
+        console.log({
+          i,
+          result,
+          initDay: this.startDateArray[i],
+          endDay: this.endDateArray[i]
+        })
+      }
+      console.log({workedHours})
+      let workedHoursMean = workedHours/(this.startDateArray.length-invalids);
+      return workedHoursMean;
     }
   
     reset_df() {
